@@ -154,22 +154,22 @@ cnn_args_for_config() {
   local seed="$2"
   case "$cfg" in
     B01)
-      echo "--model convnextv2_large --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 45 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 3e-4 --lr-backbone 1e-4 --weight-decay 0.02 --warmup-epochs 5 --scheduler cosine --label-smoothing 0.05 --mixup 0.1 --cutmix 0.5 --randaugment 9 --random-erasing 0.1 --ema --grad-clip 0.5 --freeze-backbone-epochs 3 --llrd 1.0"
+      echo "--model convnextv2_large --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 45 --batch-size 32 --img-size 224 --optimizer adamw --lr-head 8e-4 --lr-backbone 8e-5 --weight-decay 0.05 --warmup-epochs 5 --scheduler cosine --label-smoothing 0.1 --mixup 0.2 --cutmix 1.0 --randaugment 9 --random-erasing 0.25 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 3 --llrd 1.0"
       ;;
     B02)
-      echo "--model convnextv2_large --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 45 --batch-size 32 --img-size 224 --optimizer adamw --lr-head 7e-4 --lr-backbone 1e-4 --weight-decay 0.05 --warmup-epochs 5 --scheduler cosine --label-smoothing 0.05 --mixup 0.2 --cutmix 1.0 --randaugment 9 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 5 --llrd 1.0"
+      echo "--model convnextv2_large --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 45 --batch-size 32 --img-size 224 --optimizer adamw --lr-head 6e-4 --lr-backbone 6e-5 --weight-decay 0.02 --warmup-epochs 5 --scheduler cosine --label-smoothing 0.1 --mixup 0.1 --cutmix 0.5 --randaugment 9 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 2 --llrd 1.0"
       ;;
     B03)
-      echo "--model convnextv2_large --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 45 --batch-size 32 --img-size 224 --optimizer adamw --lr-head 1e-3 --lr-backbone 2e-4 --weight-decay 0.02 --warmup-epochs 5 --scheduler cosine --label-smoothing 0.05 --mixup 0.2 --cutmix 1.0 --randaugment 9 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 3 --llrd 1.0"
+      echo "--model convnextv2_large --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 45 --batch-size 32 --img-size 224 --optimizer adamw --lr-head 1e-3 --lr-backbone 1e-4 --weight-decay 0.05 --warmup-epochs 5 --scheduler cosine --label-smoothing 0.1 --mixup 0.2 --cutmix 1.0 --randaugment 9 --random-erasing 0.25 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 3 --llrd 1.0"
       ;;
     B04)
-      echo "--model convnextv2_large --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 45 --batch-size 32 --img-size 224 --optimizer adamw --lr-head 7e-4 --lr-backbone 1e-4 --weight-decay 0.05 --warmup-epochs 5 --scheduler cosine --label-smoothing 0.05 --mixup 0.2 --cutmix 1.0 --randaugment 9 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 5 --llrd 1.0"
+      echo "--model convnextv2_large --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 45 --batch-size 32 --img-size 224 --optimizer adamw --lr-head 7e-4 --lr-backbone 5e-5 --weight-decay 0.05 --warmup-epochs 5 --scheduler cosine --label-smoothing 0.1 --mixup 0.2 --cutmix 1.0 --randaugment 9 --random-erasing 0.2 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 5 --llrd 1.0"
       ;;
     B05)
-      echo "--model convnextv2_large --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 45 --batch-size 32 --img-size 224 --optimizer adamw --lr-head 1e-3 --lr-backbone 2e-4 --weight-decay 0.05 --warmup-epochs 5 --scheduler cosine --label-smoothing 0.1 --mixup 0.2 --cutmix 1.0 --randaugment 9 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 3 --llrd 1.0"
+      echo "--model convnextv2_large --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 45 --batch-size 32 --img-size 224 --optimizer adamw --lr-head 8e-4 --lr-backbone 8e-5 --weight-decay 0.05 --warmup-epochs 5 --scheduler cosine --label-smoothing 0.1 --mixup 0.3 --cutmix 1.0 --randaugment 10 --random-erasing 0.3 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 3 --llrd 1.0"
       ;;
     B06)
-      echo "--model convnextv2_large --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 45 --batch-size 32 --img-size 224 --optimizer adamw --lr-head 7e-4 --lr-backbone 1e-4 --weight-decay 0.02 --warmup-epochs 5 --scheduler cosine --label-smoothing 0.1 --mixup 0.2 --cutmix 1.0 --randaugment 9 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 5 --llrd 1.0"
+      echo "--model convnextv2_large --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 45 --batch-size 32 --img-size 224 --optimizer adamw --lr-head 5e-4 --lr-backbone 5e-5 --weight-decay 0.05 --warmup-epochs 5 --scheduler cosine --label-smoothing 0.05 --mixup 0.1 --cutmix 0.5 --randaugment 7 --random-erasing 0.15 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 3 --llrd 1.0"
       ;;
     *)
       echo "ERROR: unknown CNN cfg: $cfg" >&2
@@ -183,22 +183,22 @@ clip_args_for_config() {
   local seed="$2"
   case "$cfg" in
     D01)
-      echo "--model clip_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 30 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 1e-3 --lr-backbone 1e-5 --weight-decay 0.02 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.1 --cutmix 0.5 --randaugment 7 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 8 --llrd 0.85"
+      echo "--model clip_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 30 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 5e-4 --lr-backbone 5e-6 --weight-decay 0.05 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.1 --cutmix 0.5 --randaugment 7 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 8 --llrd 0.75"
       ;;
     D02)
-      echo "--model clip_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 30 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 5e-4 --lr-backbone 5e-6 --weight-decay 0.05 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.2 --cutmix 1.0 --randaugment 7 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 8 --llrd 0.75"
+      echo "--model clip_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 30 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 5e-4 --lr-backbone 5e-6 --weight-decay 0.05 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.0 --cutmix 0.0 --randaugment 5 --random-erasing 0.05 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 8 --llrd 0.75"
       ;;
     D03)
-      echo "--model clip_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 30 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 1e-3 --lr-backbone 5e-6 --weight-decay 0.02 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.2 --cutmix 0.5 --randaugment 7 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 8 --llrd 0.85"
+      echo "--model clip_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 30 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 7e-4 --lr-backbone 1e-5 --weight-decay 0.05 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.1 --cutmix 0.5 --randaugment 7 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 8 --llrd 0.85"
       ;;
     D04)
-      echo "--model clip_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 30 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 5e-4 --lr-backbone 1e-5 --weight-decay 0.05 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.1 --cutmix 1.0 --randaugment 7 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 8 --llrd 0.75"
+      echo "--model clip_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 30 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 4e-4 --lr-backbone 5e-6 --weight-decay 0.05 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.2 --cutmix 1.0 --randaugment 7 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 8 --llrd 0.75"
       ;;
     D05)
-      echo "--model clip_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 30 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 1e-3 --lr-backbone 1e-5 --weight-decay 0.05 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.2 --cutmix 1.0 --randaugment 7 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 8 --llrd 0.85"
+      echo "--model clip_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 30 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 5e-4 --lr-backbone 5e-6 --weight-decay 0.02 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.1 --cutmix 0.5 --randaugment 7 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 8 --llrd 0.75"
       ;;
     D06)
-      echo "--model clip_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 30 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 5e-4 --lr-backbone 5e-6 --weight-decay 0.02 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.1 --cutmix 0.5 --randaugment 7 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 8 --llrd 0.75"
+      echo "--model clip_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 30 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 3e-4 --lr-backbone 3e-6 --weight-decay 0.05 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.0 --cutmix 0.5 --randaugment 5 --random-erasing 0.05 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 8 --llrd 0.75"
       ;;
     *)
       echo "ERROR: unknown CLIP cfg: $cfg" >&2
@@ -223,8 +223,8 @@ require_file "$TRAIN_SCRIPT"
 # Phase A: Smoke tests
 # ---------------------------
 log "Phase A: smoke tests"
-run_with_args_string "A01_CNN_SMOKE" "--model convnextv2_large --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $SEED_MAIN --epochs 2 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 1e-3 --lr-backbone 2e-4 --weight-decay 0.02 --warmup-epochs 1 --scheduler cosine --label-smoothing 0.05 --mixup 0.0 --cutmix 0.0 --randaugment 0 --random-erasing 0.0 --ema --grad-clip 1.0 --freeze-backbone-epochs 1 --llrd 1.0"
-run_with_args_string "A02_CLIP_SMOKE" "--model clip_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $SEED_MAIN --epochs 2 --batch-size 8 --img-size 224 --optimizer adamw --lr-head 1e-3 --lr-backbone 1e-5 --weight-decay 0.02 --warmup-epochs 1 --scheduler cosine --label-smoothing 0.05 --mixup 0.0 --cutmix 0.0 --randaugment 0 --random-erasing 0.0 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 2 --llrd 0.85"
+run_with_args_string "A01_CNN_SMOKE" "--model convnextv2_large --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $SEED_MAIN --epochs 2 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 8e-4 --lr-backbone 8e-5 --weight-decay 0.05 --warmup-epochs 1 --scheduler cosine --label-smoothing 0.1 --mixup 0.2 --cutmix 1.0 --randaugment 9 --random-erasing 0.25 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 1 --llrd 1.0"
+run_with_args_string "A02_CLIP_SMOKE" "--model clip_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $SEED_MAIN --epochs 2 --batch-size 8 --img-size 224 --optimizer adamw --lr-head 5e-4 --lr-backbone 5e-6 --weight-decay 0.05 --warmup-epochs 1 --scheduler cosine --label-smoothing 0.05 --mixup 0.1 --cutmix 0.5 --randaugment 7 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 2 --llrd 0.75"
 
 # ---------------------------
 # Phase B: CNN coarse

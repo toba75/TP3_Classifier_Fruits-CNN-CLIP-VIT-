@@ -73,9 +73,19 @@ def seed_everything(seed: int) -> None:
     torch.cuda.manual_seed_all(seed)
 
 
-def build_model(model_name: str, num_classes: int, pretrained: bool = True) -> nn.Module:
+def build_model(
+    model_name: str,
+    num_classes: int,
+    pretrained: bool = True,
+    drop_path_rate: float = 0.0,
+) -> nn.Module:
     if model_name == CNN_MODEL_NAME:
-        return timm.create_model(CNN_TIMM_MODEL_ID, pretrained=pretrained, num_classes=num_classes)
+        return timm.create_model(
+            CNN_TIMM_MODEL_ID,
+            pretrained=pretrained,
+            num_classes=num_classes,
+            drop_path_rate=float(drop_path_rate),
+        )
 
     if model_name == "clip_vitl14":
         import open_clip
@@ -88,22 +98,40 @@ def build_model(model_name: str, num_classes: int, pretrained: bool = True) -> n
     raise ValueError(f"Unsupported model: {model_name}")
 
 
-def build_transform(model_name: str, img_size: int, train: bool) -> transforms.Compose:
+def build_transform(
+    model_name: str,
+    img_size: int,
+    train: bool,
+    randaugment: int = 0,
+    random_erasing: float = 0.0,
+) -> transforms.Compose:
     if model_name == "clip_vitl14":
         mean, std = CLIP_MEAN, CLIP_STD
     else:
         mean, std = IMAGENET_MEAN, IMAGENET_STD
 
     if train:
-        return transforms.Compose(
+        train_transforms = [
+            transforms.RandomResizedCrop(img_size, scale=(0.7, 1.0)),
+            transforms.RandomHorizontalFlip(p=0.5),
+        ]
+        if randaugment > 0:
+            train_transforms.append(transforms.RandAugment(num_ops=2, magnitude=randaugment))
+        else:
+            train_transforms.append(
+                transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.05)
+            )
+
+        train_transforms.extend(
             [
-                transforms.RandomResizedCrop(img_size, scale=(0.7, 1.0)),
-                transforms.RandomHorizontalFlip(p=0.5),
-                transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.05),
                 transforms.ToTensor(),
                 transforms.Normalize(mean=mean, std=std),
             ]
         )
+        if random_erasing > 0:
+            train_transforms.append(transforms.RandomErasing(p=random_erasing, mode="pixel"))
+
+        return transforms.Compose(train_transforms)
 
     return transforms.Compose(
         [
@@ -140,6 +168,8 @@ def build_datasets(
     seed: int,
     model_name: str,
     img_size: int,
+    randaugment: int = 0,
+    random_erasing: float = 0.0,
     classes: Sequence[str] = CLASSES,
 ) -> DatasetBundle:
     items = list_flower_items(train_dir, classes)
@@ -151,7 +181,13 @@ def build_datasets(
         stratify=labels,
     )
 
-    train_transform = build_transform(model_name=model_name, img_size=img_size, train=True)
+    train_transform = build_transform(
+        model_name=model_name,
+        img_size=img_size,
+        train=True,
+        randaugment=randaugment,
+        random_erasing=random_erasing,
+    )
     val_transform = build_transform(model_name=model_name, img_size=img_size, train=False)
 
     class_to_idx = {name: idx for idx, name in enumerate(classes)}
@@ -179,6 +215,55 @@ def maybe_apply_mixup(
     return mixed_images, targets_a, targets_b, float(lam)
 
 
+def _rand_bbox(width: int, height: int, lam: float) -> Tuple[int, int, int, int]:
+    cut_ratio = math.sqrt(max(0.0, 1.0 - lam))
+    cut_width = int(width * cut_ratio)
+    cut_height = int(height * cut_ratio)
+
+    center_x = int(np.random.randint(0, max(1, width)))
+    center_y = int(np.random.randint(0, max(1, height)))
+
+    x1 = max(center_x - cut_width // 2, 0)
+    y1 = max(center_y - cut_height // 2, 0)
+    x2 = min(center_x + cut_width // 2, width)
+    y2 = min(center_y + cut_height // 2, height)
+    return x1, y1, x2, y2
+
+
+def maybe_apply_mixup_or_cutmix(
+    images: torch.Tensor,
+    targets: torch.Tensor,
+    mixup_alpha: float,
+    cutmix_alpha: float,
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, float]:
+    use_mixup = mixup_alpha > 0
+    use_cutmix = cutmix_alpha > 0
+    if not use_mixup and not use_cutmix:
+        return images, targets, targets, 1.0
+
+    if use_mixup and use_cutmix:
+        apply_cutmix = bool(np.random.rand() < 0.5)
+    else:
+        apply_cutmix = use_cutmix
+
+    if not apply_cutmix:
+        return maybe_apply_mixup(images=images, targets=targets, mixup_alpha=mixup_alpha)
+
+    lam = float(np.random.beta(cutmix_alpha, cutmix_alpha))
+    batch_size = images.size(0)
+    index = torch.randperm(batch_size, device=images.device)
+
+    _, _, height, width = images.shape
+    x1, y1, x2, y2 = _rand_bbox(width=width, height=height, lam=lam)
+    mixed_images = images.clone()
+    mixed_images[:, :, y1:y2, x1:x2] = images[index, :, y1:y2, x1:x2]
+
+    cut_area = max(0, x2 - x1) * max(0, y2 - y1)
+    lam_adjusted = 1.0 - (cut_area / float(width * height))
+    targets_a, targets_b = targets, targets[index]
+    return mixed_images, targets_a, targets_b, float(lam_adjusted)
+
+
 def mixup_criterion(
     criterion: nn.Module,
     preds: torch.Tensor,
@@ -197,28 +282,105 @@ def freeze_backbone(model: nn.Module, freeze: bool) -> None:
 
 def build_optimizer(
     model: nn.Module,
+    optimizer_name: str,
     lr_head: float,
     lr_backbone: float,
     weight_decay: float,
+    llrd: float = 1.0,
 ) -> torch.optim.Optimizer:
-    head_params = []
-    backbone_params = []
+    llrd = float(max(1e-8, llrd))
+
+    def infer_layer_id(param_name: str) -> int:
+        lower_name = param_name.lower()
+
+        if "visual.transformer.resblocks." in lower_name:
+            try:
+                suffix = lower_name.split("visual.transformer.resblocks.", 1)[1]
+                return int(suffix.split(".", 1)[0]) + 1
+            except (IndexError, ValueError):
+                return 1
+
+        if "visual.trunk.blocks." in lower_name:
+            try:
+                suffix = lower_name.split("visual.trunk.blocks.", 1)[1]
+                return int(suffix.split(".", 1)[0]) + 1
+            except (IndexError, ValueError):
+                return 1
+
+        if "stages." in lower_name:
+            try:
+                suffix = lower_name.split("stages.", 1)[1]
+                return int(suffix.split(".", 1)[0]) + 1
+            except (IndexError, ValueError):
+                return 1
+
+        if "downsample_layers." in lower_name:
+            try:
+                suffix = lower_name.split("downsample_layers.", 1)[1]
+                return int(suffix.split(".", 1)[0])
+            except (IndexError, ValueError):
+                return 0
+
+        return 0
+
+    def _no_weight_decay(name: str) -> bool:
+        lower = name.lower()
+        return (
+            lower.endswith(".bias")
+            or "norm" in lower
+            or "bn" in lower
+            or "ln" in lower
+            or "layernorm" in lower
+            or "batchnorm" in lower
+        )
+
+    head_decay = []
+    head_no_decay = []
+    backbone_decay_infos = []
+    backbone_no_decay_infos = []
 
     for name, param in model.named_parameters():
-        if not param.requires_grad:
-            continue
-        if any(key in name.lower() for key in ["head", "fc", "classifier"]):
-            head_params.append(param)
+        is_head = any(key in name.lower() for key in ["head", "fc", "classifier"])
+        no_wd = _no_weight_decay(name)
+        layer_id = 0 if is_head else infer_layer_id(name)
+
+        if is_head:
+            (head_no_decay if no_wd else head_decay).append(param)
         else:
-            backbone_params.append(param)
+            target = backbone_no_decay_infos if no_wd else backbone_decay_infos
+            target.append((param, layer_id))
 
     param_groups = []
-    if backbone_params:
-        param_groups.append({"params": backbone_params, "lr": lr_backbone})
-    if head_params:
-        param_groups.append({"params": head_params, "lr": lr_head})
 
-    return torch.optim.AdamW(param_groups, weight_decay=weight_decay)
+    def _add_backbone_groups(
+        infos: List[Tuple[torch.nn.Parameter, int]], wd: float
+    ) -> None:
+        if not infos:
+            return
+        max_lid = max(lid for _, lid in infos)
+        buckets: Dict[float, List[torch.nn.Parameter]] = {}
+        for param, lid in infos:
+            layer_scale = llrd ** (max_lid - lid)
+            layer_lr = round(float(lr_backbone * layer_scale), 12)
+            buckets.setdefault(layer_lr, []).append(param)
+        for lr_val, params in sorted(buckets.items()):
+            param_groups.append({"params": params, "lr": float(lr_val), "weight_decay": wd})
+
+    _add_backbone_groups(backbone_decay_infos, weight_decay)
+    _add_backbone_groups(backbone_no_decay_infos, 0.0)
+
+    if head_decay:
+        param_groups.append({"params": head_decay, "lr": lr_head, "weight_decay": weight_decay})
+    if head_no_decay:
+        param_groups.append({"params": head_no_decay, "lr": lr_head, "weight_decay": 0.0})
+
+    optimizer_name = optimizer_name.lower()
+    if optimizer_name == "adamw":
+        return torch.optim.AdamW(param_groups, weight_decay=weight_decay)
+    if optimizer_name == "sgd":
+        return torch.optim.SGD(param_groups, lr=lr_backbone, momentum=0.9, nesterov=True, weight_decay=weight_decay)
+
+    raise ValueError(f"Unsupported optimizer: {optimizer_name}")
 
 
 def build_cosine_scheduler(
@@ -233,6 +395,24 @@ def build_cosine_scheduler(
         return 0.5 * (1.0 + math.cos(math.pi * progress))
 
     return torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
+
+
+def build_scheduler(
+    optimizer: torch.optim.Optimizer,
+    scheduler_name: str,
+    epochs: int,
+    warmup_epochs: int,
+):
+    name = scheduler_name.lower()
+    if name == "cosine":
+        return build_cosine_scheduler(optimizer=optimizer, epochs=epochs, warmup_epochs=warmup_epochs)
+    if name == "step":
+        step_size = max(1, epochs // 3)
+        return torch.optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=0.1)
+    if name == "none":
+        return None
+
+    raise ValueError(f"Unsupported scheduler: {scheduler_name}")
 
 
 def evaluate_model(

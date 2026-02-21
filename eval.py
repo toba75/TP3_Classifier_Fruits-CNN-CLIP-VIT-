@@ -54,7 +54,19 @@ def main() -> None:
     )
 
     model = build_model(model_name=model_name, num_classes=len(CLASSES), pretrained=False)
-    model.load_state_dict(checkpoint["state_dict"], strict=False)
+    load_result = model.load_state_dict(checkpoint["state_dict"], strict=False)
+    if load_result.missing_keys or load_result.unexpected_keys:
+        print(
+            json.dumps(
+                {
+                    "checkpoint_load_warnings": {
+                        "missing_keys": load_result.missing_keys,
+                        "unexpected_keys": load_result.unexpected_keys,
+                    }
+                },
+                indent=2,
+            )
+        )
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     require_cuda = os.getenv("REQUIRE_CUDA", "0").strip().lower() in {"1", "true", "yes", "on"}
