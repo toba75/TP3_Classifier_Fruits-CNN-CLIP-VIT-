@@ -1,0 +1,22 @@
+# Core deep learning stack
+# Note: install PyTorch according to your platform/CUDA from https://pytorch.org/get-started/locally/
+torch
+torchvision
+torchaudio
+
+# Model libraries (ConvNeXt V2 + CLIP ViT-L/14)
+timm
+open_clip_torch
+transformers
+
+# Data / training utilities
+numpy
+pillow
+scikit-learn
+tqdm
+pandas
+pyyaml
+
+# Optional but commonly used for experiment tracking
+matplotlib
+seaborn
