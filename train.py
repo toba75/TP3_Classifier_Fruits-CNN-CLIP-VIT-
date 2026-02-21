@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 from pathlib import Path
 
 import torch
@@ -55,6 +56,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--grad-clip", type=float, default=1.0)
     parser.add_argument("--freeze-backbone-epochs", type=int, default=0)
     parser.add_argument("--llrd", type=float, default=1.0)
+    parser.add_argument("--early-stopping-patience", type=int, default=10)
+    parser.add_argument("--early-stopping-min-delta", type=float, default=0.001)
 
     parser.add_argument("--output-dir", type=Path, required=True)
     return parser.parse_args()
@@ -66,6 +69,12 @@ def main() -> None:
 
     seed_everything(args.seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    require_cuda = os.getenv("REQUIRE_CUDA", "0").strip().lower() in {"1", "true", "yes", "on"}
+    if require_cuda and device.type != "cuda":
+        raise RuntimeError(
+            "GPU requis mais indisponible (REQUIRE_CUDA=1). "
+            "Lance le conteneur avec --gpus all ou désactive REQUIRE_CUDA."
+        )
 
     bundle = build_datasets(
         train_dir=args.train_dir,
@@ -110,6 +119,8 @@ def main() -> None:
     history = []
     best_val_acc = -1.0
     best_epoch = -1
+    epochs_without_improvement = 0
+    stopped_early = False
 
     for epoch in range(args.epochs):
         if args.freeze_backbone_epochs > 0:
@@ -163,9 +174,10 @@ def main() -> None:
         }
         history.append(row)
 
-        if val_acc > best_val_acc:
+        if val_acc > (best_val_acc + args.early_stopping_min_delta):
             best_val_acc = val_acc
             best_epoch = epoch + 1
+            epochs_without_improvement = 0
             checkpoint = {
                 "model_name": args.model,
                 "num_classes": len(CLASSES),
@@ -176,6 +188,17 @@ def main() -> None:
                 "epoch": best_epoch,
             }
             torch.save(checkpoint, args.output_dir / "best.pth")
+        else:
+            epochs_without_improvement += 1
+
+        if args.early_stopping_patience > 0 and epochs_without_improvement >= args.early_stopping_patience:
+            stopped_early = True
+            print(
+                f"Early stopping at epoch {epoch + 1}: no val_accuracy improvement "
+                f"for {epochs_without_improvement} epoch(s) "
+                f"(min_delta={args.early_stopping_min_delta})."
+            )
+            break
 
         torch.save(
             {
@@ -198,9 +221,13 @@ def main() -> None:
         "model": args.model,
         "seed": args.seed,
         "epochs": args.epochs,
+        "epochs_trained": len(history),
         "best_epoch": best_epoch,
         "best_val_accuracy": best_val_acc,
         "val_accuracy": best_val_acc,
+        "stopped_early": stopped_early,
+        "early_stopping_patience": args.early_stopping_patience,
+        "early_stopping_min_delta": args.early_stopping_min_delta,
         "train_dir": args.train_dir,
         "output_dir": str(args.output_dir),
     }

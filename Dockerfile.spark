@@ -2,12 +2,13 @@ FROM nvcr.io/nvidia/pytorch:25.01-py3
 
 WORKDIR /workspace
 ENV PYTHONUNBUFFERED=1 \
-	REQUIRE_CUDA=1 \
-	XDG_CACHE_HOME=/workspace/.cache \
-	TORCH_HOME=/workspace/.cache/torch \
-	HF_HOME=/workspace/.cache/huggingface \
-	TRANSFORMERS_CACHE=/workspace/.cache/huggingface/transformers \
-	OPENCLIP_CACHE_DIR=/workspace/.cache/open_clip
+    REQUIRE_CUDA=1 \
+    GPU_TARGET=spark \
+    XDG_CACHE_HOME=/workspace/.cache \
+    TORCH_HOME=/workspace/.cache/torch \
+    HF_HOME=/workspace/.cache/huggingface \
+    TRANSFORMERS_CACHE=/workspace/.cache/huggingface/transformers \
+    OPENCLIP_CACHE_DIR=/workspace/.cache/open_clip
 
 RUN mkdir -p /workspace/.cache/torch /workspace/.cache/huggingface /workspace/.cache/open_clip
 
@@ -21,14 +22,14 @@ skip = {'torch', 'torchvision', 'torchaudio'}
 
 lines = []
 for raw in src.read_text(encoding='utf-8').splitlines():
-	line = raw.strip()
-	if not line or line.startswith('#'):
-		lines.append(raw)
-		continue
-	pkg = line.split('==')[0].split('>=')[0].split('<=')[0].split('~=')[0].split('>')[0].split('<')[0].strip().lower()
-	if pkg in skip:
-		continue
-	lines.append(raw)
+    line = raw.strip()
+    if not line or line.startswith('#'):
+        lines.append(raw)
+        continue
+    pkg = line.split('==')[0].split('>=')[0].split('<=')[0].split('~=')[0].split('>')[0].split('<')[0].strip().lower()
+    if pkg in skip:
+        continue
+    lines.append(raw)
 
 dst.write_text('\n'.join(lines) + '\n', encoding='utf-8')
 PY

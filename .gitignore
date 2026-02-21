@@ -88,6 +88,8 @@ mlruns/
 # -----------------------------
 .huggingface/
 .cache/huggingface/
+.cache/torch/
+.cache/open_clip/
 transformers_cache/
 
 # Tokenizers / sentencepiece generated artifacts

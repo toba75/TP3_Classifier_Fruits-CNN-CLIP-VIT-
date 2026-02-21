@@ -17,6 +17,8 @@ TRAIN_SCRIPT="${TRAIN_SCRIPT:-train.py}"
 EVAL_SCRIPT="${EVAL_SCRIPT:-eval.py}"
 TRAIN_DIR="${TRAIN_DIR:-data/train}"
 VAL_SPLIT="${VAL_SPLIT:-0.2}"
+EARLY_STOPPING_PATIENCE="${EARLY_STOPPING_PATIENCE:-10}"
+EARLY_STOPPING_MIN_DELTA="${EARLY_STOPPING_MIN_DELTA:-0.001}"
 
 SEED_MAIN=11
 SEED_2=23
@@ -152,7 +154,7 @@ cnn_args_for_config() {
   local seed="$2"
   case "$cfg" in
     B01)
-      echo "--model convnextv2_tiny --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 45 --batch-size 32 --img-size 224 --optimizer adamw --lr-head 1e-3 --lr-backbone 2e-4 --weight-decay 0.02 --warmup-epochs 5 --scheduler cosine --label-smoothing 0.05 --mixup 0.2 --cutmix 1.0 --randaugment 9 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 3 --llrd 1.0"
+      echo "--model convnextv2_tiny --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 45 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 3e-4 --lr-backbone 1e-4 --weight-decay 0.02 --warmup-epochs 5 --scheduler cosine --label-smoothing 0.05 --mixup 0.1 --cutmix 0.5 --randaugment 9 --random-erasing 0.1 --ema --grad-clip 0.5 --freeze-backbone-epochs 3 --llrd 1.0"
       ;;
     B02)
       echo "--model convnextv2_tiny --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 45 --batch-size 32 --img-size 224 --optimizer adamw --lr-head 7e-4 --lr-backbone 1e-4 --weight-decay 0.05 --warmup-epochs 5 --scheduler cosine --label-smoothing 0.05 --mixup 0.2 --cutmix 1.0 --randaugment 9 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 5 --llrd 1.0"
@@ -208,9 +210,10 @@ clip_args_for_config() {
 run_with_args_string() {
   local run_id="$1"
   local args_str="$2"
+  local early_stopping_args="--early-stopping-patience $EARLY_STOPPING_PATIENCE --early-stopping-min-delta $EARLY_STOPPING_MIN_DELTA"
 
   # shellcheck disable=SC2086
-  run_train "$run_id" $args_str
+  run_train "$run_id" $args_str $early_stopping_args
 }
 
 log "Checking required scripts"

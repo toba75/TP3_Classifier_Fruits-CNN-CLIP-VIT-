@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 
 import torch
@@ -56,6 +57,13 @@ def main() -> None:
     model.load_state_dict(checkpoint["state_dict"], strict=False)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    require_cuda = os.getenv("REQUIRE_CUDA", "0").strip().lower() in {"1", "true", "yes", "on"}
+    if require_cuda and device.type != "cuda":
+        raise RuntimeError(
+            "GPU requis mais indisponible (REQUIRE_CUDA=1). "
+            "Lance le conteneur avec --gpus all ou désactive REQUIRE_CUDA."
+        )
+
     model = model.to(device)
     criterion = nn.CrossEntropyLoss()
 
