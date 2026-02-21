@@ -135,7 +135,7 @@ docker run --rm --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=6710886
 
 ## 5) Entraîner un modèle (commande unitaire)
 
-Exemple ConvNeXt V2-Large :
+Exemple ConvNeXt V2-Large (preset SOTA explicite) :
 
 ```bash
 python3 train.py \
@@ -143,28 +143,31 @@ python3 train.py \
   --train-dir data/train \
   --val-split 0.2 \
   --seed 11 \
-  --epochs 30 \
-  --batch-size 16 \
+  --epochs 45 \
+  --batch-size 32 \
   --img-size 224 \
   --optimizer adamw \
-  --lr-head 1e-3 \
-  --lr-backbone 2e-4 \
-  --weight-decay 0.02 \
-  --warmup-epochs 3 \
+  --lr-head 8e-4 \
+  --lr-backbone 8e-5 \
+  --weight-decay 0.05 \
+  --warmup-epochs 5 \
   --scheduler cosine \
-  --label-smoothing 0.05 \
+  --label-smoothing 0.1 \
   --mixup 0.2 \
-  --cutmix 0.0 \
-  --randaugment 0 \
-  --random-erasing 0.0 \
+  --cutmix 1.0 \
+  --randaugment 9 \
+  --random-erasing 0.25 \
   --amp --ema \
   --grad-clip 1.0 \
   --freeze-backbone-epochs 3 \
   --llrd 1.0 \
+  --drop-path-rate 0.2 \
   --early-stopping-patience 10 \
   --early-stopping-min-delta 0.001 \
   --output-dir runs/MY_RUN
 ```
+
+> Note : si un argument de tuning n'est pas fourni (`lr`, `mixup`, `cutmix`, `randaugment`, `random-erasing`, etc.), `train.py` applique automatiquement un preset SOTA dépendant du modèle (`convnextv2_large` ou `clip_vitl14`).
 
 Sorties dans `runs/MY_RUN/` :
 - `best.pth` : meilleur checkpoint (sur `val_accuracy`)
@@ -186,6 +189,8 @@ python3 eval.py \
 ```
 
 Sortie : `runs/MY_RUN/eval.json`
+
+Si le checkpoint ne matche pas exactement l'architecture attendue, `eval.py` affiche aussi les `missing_keys` / `unexpected_keys` de `load_state_dict`.
 
 ---
 
@@ -239,9 +244,12 @@ print(label)
 
 Déjà en place dans le code :
 - split stratifié train/val,
-- augmentation (`RandomResizedCrop`, `RandomHorizontalFlip`, `ColorJitter`),
+- augmentation (`RandomResizedCrop`, `RandomHorizontalFlip`, `RandAugment`; fallback `ColorJitter` si `--randaugment 0`),
 - label smoothing,
-- mixup,
+- mixup + cutmix (sélection aléatoire quand les deux sont actifs),
+- random erasing (`mode="pixel"`),
+- drop path (CNN),
+- LLRD (Layer-wise LR Decay) backbone,
 - warmup + scheduler cosinus,
 - EMA,
 - early stopping (`--early-stopping-patience`, `--early-stopping-min-delta`).
