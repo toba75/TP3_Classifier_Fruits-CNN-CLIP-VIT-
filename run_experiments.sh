@@ -223,7 +223,7 @@ require_file "$TRAIN_SCRIPT"
 # Phase A: Smoke tests
 # ---------------------------
 log "Phase A: smoke tests"
-run_with_args_string "A01_CNN_SMOKE" "--model convnextv2_large --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $SEED_MAIN --epochs 2 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 1e-3 --lr-backbone 2e-4 --weight-decay 0.02 --warmup-epochs 1 --scheduler cosine --label-smoothing 0.05 --mixup 0.0 --cutmix 0.0 --randaugment 0 --random-erasing 0.0 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 1 --llrd 1.0"
+run_with_args_string "A01_CNN_SMOKE" "--model convnextv2_large --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $SEED_MAIN --epochs 2 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 1e-3 --lr-backbone 2e-4 --weight-decay 0.02 --warmup-epochs 1 --scheduler cosine --label-smoothing 0.05 --mixup 0.0 --cutmix 0.0 --randaugment 0 --random-erasing 0.0 --ema --grad-clip 1.0 --freeze-backbone-epochs 1 --llrd 1.0"
 run_with_args_string "A02_CLIP_SMOKE" "--model clip_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $SEED_MAIN --epochs 2 --batch-size 8 --img-size 224 --optimizer adamw --lr-head 1e-3 --lr-backbone 1e-5 --weight-decay 0.02 --warmup-epochs 1 --scheduler cosine --label-smoothing 0.05 --mixup 0.0 --cutmix 0.0 --randaugment 0 --random-erasing 0.0 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 2 --llrd 0.85"
 
 # ---------------------------
