@@ -28,7 +28,7 @@ def _load_model_from_checkpoint(weights_path: str, fallback_model_name: str):
 
 def load_cnn_model(weights_path: str = "cnn_flowers.pth"):
     """Charge et retourne le modèle CNN entraîné."""
-    return _load_model_from_checkpoint(weights_path=weights_path, fallback_model_name="convnextv2_tiny")
+    return _load_model_from_checkpoint(weights_path=weights_path, fallback_model_name="convnextv2_large")
 
 
 def load_vit_model(weights_path: str = "vit_flowers.pth"):
@@ -40,7 +40,7 @@ def predict(model, image_path: str) -> str:
     """Prédit la classe d'une image. Retourne un str parmi CLASSES."""
     from PIL import Image
 
-    transform = getattr(model, "_transform", build_transform(model_name="convnextv2_tiny", img_size=224, train=False))
+    transform = getattr(model, "_transform", build_transform(model_name="convnextv2_large", img_size=224, train=False))
 
     image = Image.open(image_path).convert("RGB")
     tensor = transform(image).unsqueeze(0)

@@ -30,7 +30,7 @@ from training_utils import (
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Train ConvNeXtV2 or CLIP ViT-L/14 on flowers")
 
-    parser.add_argument("--model", required=True, choices=["convnextv2_tiny", "convnextv2_base", "clip_vitl14"])
+    parser.add_argument("--model", required=True, choices=["convnextv2_large", "clip_vitl14"])
     parser.add_argument("--train-dir", default="data/train")
     parser.add_argument("--val-split", type=float, default=0.2)
     parser.add_argument("--seed", type=int, default=11)

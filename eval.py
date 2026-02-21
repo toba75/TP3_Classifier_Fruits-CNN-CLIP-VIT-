@@ -33,7 +33,7 @@ def main() -> None:
         raise FileNotFoundError(f"Checkpoint not found: {args.checkpoint}")
 
     checkpoint = torch.load(args.checkpoint, map_location="cpu")
-    model_name = checkpoint.get("model_name", "convnextv2_tiny")
+    model_name = checkpoint.get("model_name", "convnextv2_large")
     img_size = int(checkpoint.get("img_size", args.img_size))
 
     bundle = build_datasets(

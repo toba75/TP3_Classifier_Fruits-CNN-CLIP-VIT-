@@ -15,7 +15,7 @@ Le plan suppose un script unique :
 
 ```bash
 python train.py \
-  --model {convnextv2_tiny,convnextv2_base,clip_vitl14} \
+  --model {convnextv2_large,clip_vitl14} \
   --train-dir data/train \
   --val-split 0.2 \
   --seed <int> \
@@ -65,7 +65,7 @@ Seeds de référence : `11`, `23`, `47`
 ## 4) Grille d’hyperparamètres
 
 ## 4.1 CNN (ConvNeXt V2)
-- `model`: `{convnextv2_tiny, convnextv2_base}`
+- `model`: `{convnextv2_large}`
 - `img_size`: `{224}`
 - `batch_size`: `{32, 64}` (si VRAM insuffisante, réduire)
 - `epochs`: `45`
@@ -108,7 +108,7 @@ Exécuter dans cet ordre, ne pas continuer si un run échoue techniquement.
 Commandes :
 
 ```bash
-python train.py --model convnextv2_tiny --train-dir data/train --val-split 0.2 --seed 11 --epochs 2 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 1e-3 --lr-backbone 2e-4 --weight-decay 0.02 --warmup-epochs 1 --scheduler cosine --label-smoothing 0.05 --mixup 0.0 --cutmix 0.0 --randaugment 0 --random-erasing 0.0 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 1 --llrd 1.0 --output-dir runs/A01_CNN_SMOKE
+python train.py --model convnextv2_large --train-dir data/train --val-split 0.2 --seed 11 --epochs 2 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 1e-3 --lr-backbone 2e-4 --weight-decay 0.02 --warmup-epochs 1 --scheduler cosine --label-smoothing 0.05 --mixup 0.0 --cutmix 0.0 --randaugment 0 --random-erasing 0.0 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 1 --llrd 1.0 --output-dir runs/A01_CNN_SMOKE
 python train.py --model clip_vitl14 --train-dir data/train --val-split 0.2 --seed 11 --epochs 2 --batch-size 8 --img-size 224 --optimizer adamw --lr-head 1e-3 --lr-backbone 1e-5 --weight-decay 0.02 --warmup-epochs 1 --scheduler cosine --label-smoothing 0.05 --mixup 0.0 --cutmix 0.0 --randaugment 0 --random-erasing 0.0 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 2 --llrd 0.85 --output-dir runs/A02_CLIP_SMOKE
 ```
 
@@ -119,12 +119,12 @@ Critère de passage : entraînement + checkpoint + éval val sans erreur.
 ## 5.2 Phase B — Sélection CNN (coarse)
 Exécuter les 6 runs ci-dessous dans l’ordre :
 
-3. `B01_CNN_tiny_lr1e3_wd0.02_fb3`
-4. `B02_CNN_tiny_lr7e4_wd0.05_fb5`
-5. `B03_CNN_base_lr1e3_wd0.02_fb3`
-6. `B04_CNN_base_lr7e4_wd0.05_fb5`
-7. `B05_CNN_tiny_lr1e3_wd0.05_fb3_ls0.1`
-8. `B06_CNN_base_lr7e4_wd0.02_fb5_ls0.1`
+3. `B01_CNN_lr3e4_wd0.02_fb3`
+4. `B02_CNN_lr7e4_wd0.05_fb5`
+5. `B03_CNN_lr1e3_wd0.02_fb3`
+6. `B04_CNN_lr7e4_wd0.05_fb5`
+7. `B05_CNN_lr1e3_wd0.05_fb3_ls0.1`
+8. `B06_CNN_lr7e4_wd0.02_fb5_ls0.1`
 
 Template commande (adapter par run) :
 
@@ -196,7 +196,7 @@ Exports attendus :
 
 | Run ID | Modèle | Seed | Statut | Val Acc | Macro-F1 | Checkpoint |
 |---|---|---:|---|---:|---:|---|
-| A01_CNN_SMOKE | ConvNeXtV2-Tiny | 11 | TODO | - | - | - |
+| A01_CNN_SMOKE | ConvNeXtV2-Large | 11 | TODO | - | - | - |
 | A02_CLIP_SMOKE | CLIP ViT-L/14 | 11 | TODO | - | - | - |
 | ... | ... | ... | ... | ... | ... | ... |
 

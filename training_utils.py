@@ -16,6 +16,9 @@ from torch.utils.data import Dataset
 from torchvision import transforms
 
 CLASSES: List[str] = ["daisy", "dandelion", "rose", "sunflower", "tulip"]
+CNN_MODEL_NAME = "convnextv2_large"
+CNN_PRETRAINED_TAG = "fcmae_ft_in22k_in1k"
+CNN_TIMM_MODEL_ID = f"{CNN_MODEL_NAME}.{CNN_PRETRAINED_TAG}"
 
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD = (0.229, 0.224, 0.225)
@@ -71,8 +74,8 @@ def seed_everything(seed: int) -> None:
 
 
 def build_model(model_name: str, num_classes: int, pretrained: bool = True) -> nn.Module:
-    if model_name in {"convnextv2_tiny", "convnextv2_base"}:
-        return timm.create_model(model_name, pretrained=pretrained, num_classes=num_classes)
+    if model_name == CNN_MODEL_NAME:
+        return timm.create_model(CNN_TIMM_MODEL_ID, pretrained=pretrained, num_classes=num_classes)
 
     if model_name == "clip_vitl14":
         import open_clip

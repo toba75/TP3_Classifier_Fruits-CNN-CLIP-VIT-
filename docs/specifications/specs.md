@@ -48,14 +48,14 @@ Classes cibles (évaluation) :
 ## 4) Modèle CNN — ConvNeXt V2
 
 ### 4.1 Architecture
-- Backbone : `convnextv2_{tiny|base}` pré-entraîné ImageNet-1k/22k.
+- Backbone : `convnextv2_large` avec poids `fcmae_ft_in22k_in1k`.
 - Remplacer la tête par `Linear(in_features, 5)`.
 - Export du meilleur checkpoint en `cnn_flowers.pth`.
 
 ### 4.2 Recette d’entraînement SOTA (prescriptive)
 - Optimiseur : **AdamW**
 - Weight decay : 0.02–0.05
-- LR de base : `1e-3` (à scaler selon batch)
+- LR initiale : `1e-3` (à ajuster selon batch)
 - Scheduler : **cosine decay** avec **warmup** (5–10 epochs)
 - Loss : `CrossEntropy` + **label smoothing** (0.05–0.1)
 - EMA des poids : activée (fortement recommandée)

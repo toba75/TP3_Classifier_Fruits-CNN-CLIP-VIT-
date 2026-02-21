@@ -1,7 +1,7 @@
 # TP3 Flowers Classifier (CNN + CLIP ViT)
 
 Projet de classification de fleurs conforme au TP3, avec deux familles de modèles :
-- **CNN** : ConvNeXt V2 (`convnextv2_tiny`, `convnextv2_base`)
+- **CNN** : ConvNeXt V2-Large (`convnextv2_large`, poids `fcmae_ft_in22k_in1k`)
 - **ViT** : CLIP ViT-L/14 (`clip_vitl14` via OpenCLIP)
 
 Le projet fournit :
@@ -135,11 +135,11 @@ docker run --rm --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=6710886
 
 ## 5) Entraîner un modèle (commande unitaire)
 
-Exemple ConvNeXt V2 tiny :
+Exemple ConvNeXt V2-Large :
 
 ```bash
 python3 train.py \
-  --model convnextv2_tiny \
+  --model convnextv2_large \
   --train-dir data/train \
   --val-split 0.2 \
   --seed 11 \
