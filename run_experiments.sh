@@ -212,22 +212,22 @@ dino_args_for_config() {
   local seed="$2"
   case "$cfg" in
     G01)
-      echo "--model dinov2_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 20 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 5e-4 --lr-backbone 5e-6 --weight-decay 0.05 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.1 --cutmix 0.5 --randaugment 7 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 5 --llrd 0.75"
+      echo "--model dinov2_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 30 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 5e-4 --lr-backbone 5e-6 --weight-decay 0.05 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.1 --cutmix 0.5 --randaugment 7 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 5 --llrd 0.75"
       ;;
     G02)
-      echo "--model dinov2_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 20 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 5e-4 --lr-backbone 5e-6 --weight-decay 0.05 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.0 --cutmix 0.0 --randaugment 5 --random-erasing 0.05 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 5 --llrd 0.75"
+      echo "--model dinov2_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 30 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 5e-4 --lr-backbone 5e-6 --weight-decay 0.05 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.0 --cutmix 0.0 --randaugment 5 --random-erasing 0.05 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 5 --llrd 0.75"
       ;;
     G03)
-      echo "--model dinov2_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 20 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 7e-4 --lr-backbone 1e-5 --weight-decay 0.05 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.1 --cutmix 0.5 --randaugment 7 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 5 --llrd 0.85"
+      echo "--model dinov2_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 30 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 7e-4 --lr-backbone 1e-5 --weight-decay 0.05 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.1 --cutmix 0.5 --randaugment 7 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 5 --llrd 0.85"
       ;;
     G04)
-      echo "--model dinov2_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 20 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 4e-4 --lr-backbone 5e-6 --weight-decay 0.05 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.2 --cutmix 1.0 --randaugment 7 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 5 --llrd 0.75"
+      echo "--model dinov2_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 30 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 4e-4 --lr-backbone 5e-6 --weight-decay 0.05 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.2 --cutmix 1.0 --randaugment 7 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 5 --llrd 0.75"
       ;;
     G05)
-      echo "--model dinov2_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 20 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 5e-4 --lr-backbone 5e-6 --weight-decay 0.02 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.1 --cutmix 0.5 --randaugment 7 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 5 --llrd 0.75"
+      echo "--model dinov2_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 30 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 5e-4 --lr-backbone 5e-6 --weight-decay 0.02 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.1 --cutmix 0.5 --randaugment 7 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 5 --llrd 0.75"
       ;;
     G06)
-      echo "--model dinov2_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 20 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 3e-4 --lr-backbone 3e-6 --weight-decay 0.05 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.0 --cutmix 0.5 --randaugment 5 --random-erasing 0.05 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 5 --llrd 0.75"
+      echo "--model dinov2_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 30 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 3e-4 --lr-backbone 3e-6 --weight-decay 0.05 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.0 --cutmix 0.5 --randaugment 5 --random-erasing 0.05 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 5 --llrd 0.75"
       ;;
     *)
       echo "ERROR: unknown DINO cfg: $cfg" >&2
