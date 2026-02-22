@@ -67,6 +67,7 @@ checkpoints/
 checkpoint*/
 outputs/
 runs/
+runs_copy/
 lightning_logs/
 mlruns/
 

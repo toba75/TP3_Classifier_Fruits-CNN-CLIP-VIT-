@@ -32,8 +32,13 @@ def load_cnn_model(weights_path: str = "cnn_flowers.pth"):
 
 
 def load_vit_model(weights_path: str = "vit_flowers.pth"):
-    """Charge et retourne le modèle ViT entraîné."""
+    """Charge et retourne le modèle ViT entraîné (CLIP ou DINOv2)."""
     return _load_model_from_checkpoint(weights_path=weights_path, fallback_model_name="clip_vitl14")
+
+
+def load_dinov2_model(weights_path: str = "vit_flowers.pth"):
+    """Charge et retourne le modèle DINOv2 ViT entraîné."""
+    return _load_model_from_checkpoint(weights_path=weights_path, fallback_model_name="dinov2_vitl14")
 
 
 def predict(model, image_path: str) -> str:

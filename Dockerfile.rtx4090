@@ -1,9 +1,9 @@
-FROM nvcr.io/nvidia/pytorch:25.01-py3
+FROM nvcr.io/nvidia/pytorch:24.10-py3
 
 WORKDIR /workspace
 ENV PYTHONUNBUFFERED=1 \
     REQUIRE_CUDA=1 \
-    GPU_TARGET=rtx5090 \
+    GPU_TARGET=rtx4090 \
     XDG_CACHE_HOME=/workspace/.cache \
     TORCH_HOME=/workspace/.cache/torch \
     HF_HOME=/workspace/.cache/huggingface \
@@ -36,6 +36,14 @@ PY
 RUN pip install --no-cache-dir -r /tmp/requirements_no_torch.txt
 
 COPY . /workspace
-RUN chmod +x /workspace/run_experiments.sh
+# Copy the entrypoint script to a location that won't be overwritten by the volume mount
+COPY run_experiments.sh /usr/local/bin/run_experiments.sh
+COPY run_experiments_light.sh /usr/local/bin/run_experiments_light.sh
+RUN sed -i 's/\r$//' /workspace/run_experiments.sh && \
+    sed -i 's/\r$//' /usr/local/bin/run_experiments.sh && \
+    sed -i 's/\r$//' /usr/local/bin/run_experiments_light.sh && \
+    chmod +x /workspace/run_experiments.sh && \
+    chmod +x /usr/local/bin/run_experiments.sh && \
+    chmod +x /usr/local/bin/run_experiments_light.sh
 
-CMD ["bash", "/workspace/run_experiments.sh"]
+CMD ["bash", "/usr/local/bin/run_experiments.sh"]

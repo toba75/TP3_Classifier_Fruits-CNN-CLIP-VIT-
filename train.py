@@ -72,13 +72,35 @@ SOTA_DEFAULTS = {
         "llrd": 0.75,
         "drop_path_rate": 0.0,
     },
+    "dinov2_vitl14": {
+        "epochs": 20,
+        "batch_size": 16,
+        "img_size": 224,
+        "optimizer": "adamw",
+        "lr_head": 5e-4,
+        "lr_backbone": 5e-6,
+        "weight_decay": 0.05,
+        "warmup_epochs": 3,
+        "scheduler": "cosine",
+        "label_smoothing": 0.05,
+        "mixup": 0.1,
+        "cutmix": 0.5,
+        "randaugment": 7,
+        "random_erasing": 0.1,
+        "amp": True,
+        "ema": True,
+        "grad_clip": 1.0,
+        "freeze_backbone_epochs": 5,
+        "llrd": 0.75,
+        "drop_path_rate": 0.0,
+    },
 }
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Train ConvNeXtV2 or CLIP ViT-L/14 on flowers")
+    parser = argparse.ArgumentParser(description="Train ConvNeXtV2, CLIP ViT-L/14, or DINOv2 ViT-L/14 on flowers")
 
-    parser.add_argument("--model", required=True, choices=["convnextv2_large", "clip_vitl14"])
+    parser.add_argument("--model", required=True, choices=["convnextv2_large", "clip_vitl14", "dinov2_vitl14"])
     parser.add_argument("--train-dir", default="data/train")
     parser.add_argument("--val-split", type=float, default=0.2)
     parser.add_argument("--seed", type=int, default=11)
@@ -98,6 +120,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--cutmix", type=float, default=None)
     parser.add_argument("--randaugment", type=int, default=None)
     parser.add_argument("--random-erasing", type=float, default=None)
+    parser.add_argument("--erasing-mode", type=str, default=None,
+                        help="Random erasing mode (e.g. 'pixel'). Only for backends that support it.")
 
     parser.add_argument("--amp", action=argparse.BooleanOptionalAction, default=None)
     parser.add_argument("--ema", action=argparse.BooleanOptionalAction, default=None)
@@ -183,6 +207,7 @@ def main() -> None:
         img_size=args.img_size,
         randaugment=args.randaugment,
         random_erasing=args.random_erasing,
+        erasing_mode=args.erasing_mode,
         classes=CLASSES,
     )
 

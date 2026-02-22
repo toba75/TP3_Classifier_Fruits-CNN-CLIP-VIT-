@@ -66,6 +66,19 @@ class CLIPClassifier(nn.Module):
         return self.classifier(features)
 
 
+class DINOv2Classifier(nn.Module):
+    def __init__(self, backbone: nn.Module, embed_dim: int, num_classes: int) -> None:
+        super().__init__()
+        self.backbone = backbone
+        self.classifier = nn.Linear(embed_dim, num_classes)
+
+    def forward(self, images: torch.Tensor) -> torch.Tensor:
+        features = self.backbone(images)
+        if features.ndim > 2:
+            features = features.mean(dim=1)
+        return self.classifier(features)
+
+
 def seed_everything(seed: int) -> None:
     random.seed(seed)
     np.random.seed(seed)
@@ -95,6 +108,15 @@ def build_model(
         embed_dim = int(getattr(clip_model.visual, "output_dim"))
         return CLIPClassifier(clip_model, embed_dim=embed_dim, num_classes=num_classes)
 
+    if model_name == "dinov2_vitl14":
+        backbone = torch.hub.load(
+            "facebookresearch/dinov2",
+            "dinov2_vitl14",
+            pretrained=pretrained,
+        )
+        embed_dim = backbone.embed_dim  # 1024 for ViT-L
+        return DINOv2Classifier(backbone, embed_dim=embed_dim, num_classes=num_classes)
+
     raise ValueError(f"Unsupported model: {model_name}")
 
 
@@ -104,10 +126,12 @@ def build_transform(
     train: bool,
     randaugment: int = 0,
     random_erasing: float = 0.0,
+    erasing_mode: str | None = None,
 ) -> transforms.Compose:
     if model_name == "clip_vitl14":
         mean, std = CLIP_MEAN, CLIP_STD
     else:
+        # ConvNeXt V2 and DINOv2 both use ImageNet normalization
         mean, std = IMAGENET_MEAN, IMAGENET_STD
 
     if train:
@@ -129,7 +153,10 @@ def build_transform(
             ]
         )
         if random_erasing > 0:
-            train_transforms.append(transforms.RandomErasing(p=random_erasing, mode="pixel"))
+            re_kwargs: dict = {"p": random_erasing}
+            if erasing_mode is not None:
+                re_kwargs["mode"] = erasing_mode
+            train_transforms.append(transforms.RandomErasing(**re_kwargs))
 
         return transforms.Compose(train_transforms)
 
@@ -170,6 +197,7 @@ def build_datasets(
     img_size: int,
     randaugment: int = 0,
     random_erasing: float = 0.0,
+    erasing_mode: str | None = None,
     classes: Sequence[str] = CLASSES,
 ) -> DatasetBundle:
     items = list_flower_items(train_dir, classes)
@@ -187,6 +215,7 @@ def build_datasets(
         train=True,
         randaugment=randaugment,
         random_erasing=random_erasing,
+        erasing_mode=erasing_mode,
     )
     val_transform = build_transform(model_name=model_name, img_size=img_size, train=False)
 
@@ -303,6 +332,14 @@ def build_optimizer(
         if "visual.trunk.blocks." in lower_name:
             try:
                 suffix = lower_name.split("visual.trunk.blocks.", 1)[1]
+                return int(suffix.split(".", 1)[0]) + 1
+            except (IndexError, ValueError):
+                return 1
+
+        # DINOv2: backbone.blocks.X.…
+        if "backbone.blocks." in lower_name:
+            try:
+                suffix = lower_name.split("backbone.blocks.", 1)[1]
                 return int(suffix.split(".", 1)[0]) + 1
             except (IndexError, ValueError):
                 return 1

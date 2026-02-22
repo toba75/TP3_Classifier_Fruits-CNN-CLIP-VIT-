@@ -207,10 +207,57 @@ clip_args_for_config() {
   esac
 }
 
+dino_args_for_config() {
+  local cfg="$1"
+  local seed="$2"
+  case "$cfg" in
+    G01)
+      echo "--model dinov2_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 20 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 5e-4 --lr-backbone 5e-6 --weight-decay 0.05 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.1 --cutmix 0.5 --randaugment 7 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 5 --llrd 0.75"
+      ;;
+    G02)
+      echo "--model dinov2_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 20 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 5e-4 --lr-backbone 5e-6 --weight-decay 0.05 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.0 --cutmix 0.0 --randaugment 5 --random-erasing 0.05 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 5 --llrd 0.75"
+      ;;
+    G03)
+      echo "--model dinov2_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 20 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 7e-4 --lr-backbone 1e-5 --weight-decay 0.05 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.1 --cutmix 0.5 --randaugment 7 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 5 --llrd 0.85"
+      ;;
+    G04)
+      echo "--model dinov2_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 20 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 4e-4 --lr-backbone 5e-6 --weight-decay 0.05 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.2 --cutmix 1.0 --randaugment 7 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 5 --llrd 0.75"
+      ;;
+    G05)
+      echo "--model dinov2_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 20 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 5e-4 --lr-backbone 5e-6 --weight-decay 0.02 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.1 --cutmix 0.5 --randaugment 7 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 5 --llrd 0.75"
+      ;;
+    G06)
+      echo "--model dinov2_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $seed --epochs 20 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 3e-4 --lr-backbone 3e-6 --weight-decay 0.05 --warmup-epochs 3 --scheduler cosine --label-smoothing 0.05 --mixup 0.0 --cutmix 0.5 --randaugment 5 --random-erasing 0.05 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 5 --llrd 0.75"
+      ;;
+    *)
+      echo "ERROR: unknown DINO cfg: $cfg" >&2
+      exit 1
+      ;;
+  esac
+}
+
+run_is_complete() {
+  # A run is considered complete if metrics.json exists and contains a val_accuracy
+  local run_id="$1"
+  local metrics="runs/$run_id/metrics.json"
+  [[ -f "$metrics" ]] && grep -q "val_accuracy" "$metrics"
+}
+
 run_with_args_string() {
   local run_id="$1"
   local args_str="$2"
   local early_stopping_args="--early-stopping-patience $EARLY_STOPPING_PATIENCE --early-stopping-min-delta $EARLY_STOPPING_MIN_DELTA"
+
+  if run_is_complete "$run_id"; then
+    log "SKIP  $run_id (already complete)"
+    return 0
+  fi
+
+  # Clean up any partial/incomplete run
+  if [[ -d "runs/$run_id" ]]; then
+    log "CLEAN $run_id (incomplete, restarting)"
+    rm -rf "runs/$run_id"
+  fi
 
   # shellcheck disable=SC2086
   run_train "$run_id" $args_str $early_stopping_args
@@ -225,6 +272,7 @@ require_file "$TRAIN_SCRIPT"
 log "Phase A: smoke tests"
 run_with_args_string "A01_CNN_SMOKE" "--model convnextv2_large --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $SEED_MAIN --epochs 2 --batch-size 16 --img-size 224 --optimizer adamw --lr-head 8e-4 --lr-backbone 8e-5 --weight-decay 0.05 --warmup-epochs 1 --scheduler cosine --label-smoothing 0.1 --mixup 0.2 --cutmix 1.0 --randaugment 9 --random-erasing 0.25 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 1 --llrd 1.0"
 run_with_args_string "A02_CLIP_SMOKE" "--model clip_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $SEED_MAIN --epochs 2 --batch-size 8 --img-size 224 --optimizer adamw --lr-head 5e-4 --lr-backbone 5e-6 --weight-decay 0.05 --warmup-epochs 1 --scheduler cosine --label-smoothing 0.05 --mixup 0.1 --cutmix 0.5 --randaugment 7 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 2 --llrd 0.75"
+run_with_args_string "A03_DINO_SMOKE" "--model dinov2_vitl14 --train-dir $TRAIN_DIR --val-split $VAL_SPLIT --seed $SEED_MAIN --epochs 2 --batch-size 8 --img-size 224 --optimizer adamw --lr-head 5e-4 --lr-backbone 5e-6 --weight-decay 0.05 --warmup-epochs 1 --scheduler cosine --label-smoothing 0.05 --mixup 0.1 --cutmix 0.5 --randaugment 7 --random-erasing 0.1 --amp --ema --grad-clip 1.0 --freeze-backbone-epochs 2 --llrd 0.75"
 
 # ---------------------------
 # Phase B: CNN coarse
@@ -281,7 +329,34 @@ run_with_args_string "E03_CLIP_top2_seed23" "$(clip_args_for_config "$CLIP_TOP2_
 run_with_args_string "E04_CLIP_top2_seed47" "$(clip_args_for_config "$CLIP_TOP2_CFG" "$SEED_3")"
 
 # ---------------------------
-# Pick final winner by mean score
+# Phase G: DINOv2 coarse (6 configs)
+# ---------------------------
+log "Phase G: DINOv2 coarse"
+for cfg in G01 G02 G03 G04 G05 G06; do
+  run_with_args_string "${cfg}_DINO" "$(dino_args_for_config "$cfg" "$SEED_MAIN")"
+done
+
+log "Selecting Top-2 DINO from phase G"
+DINO_TOP_IDS=( $(rank_top2 G01_DINO G02_DINO G03_DINO G04_DINO G05_DINO G06_DINO) )
+if [[ "${#DINO_TOP_IDS[@]}" -ne 2 ]]; then
+  echo "ERROR: DINO top-2 selection failed" >&2
+  exit 1
+fi
+DINO_TOP1_CFG="${DINO_TOP_IDS[0]%%_DINO}"
+DINO_TOP2_CFG="${DINO_TOP_IDS[1]%%_DINO}"
+log "DINO top-1: $DINO_TOP1_CFG | top-2: $DINO_TOP2_CFG"
+
+# ---------------------------
+# Phase H: DINOv2 multi-seed
+# ---------------------------
+log "Phase H: DINO multi-seed"
+run_with_args_string "H01_DINO_top1_seed23" "$(dino_args_for_config "$DINO_TOP1_CFG" "$SEED_2")"
+run_with_args_string "H02_DINO_top1_seed47" "$(dino_args_for_config "$DINO_TOP1_CFG" "$SEED_3")"
+run_with_args_string "H03_DINO_top2_seed23" "$(dino_args_for_config "$DINO_TOP2_CFG" "$SEED_2")"
+run_with_args_string "H04_DINO_top2_seed47" "$(dino_args_for_config "$DINO_TOP2_CFG" "$SEED_3")"
+
+# ---------------------------
+# Pick final winners by mean score
 # ---------------------------
 mean_of_three() {
   local id1="$1" id2="$2" id3="$3"
@@ -298,6 +373,16 @@ print(sum(vals) / len(vals))
 PY
 }
 
+pick_better() {
+  # usage: pick_better mean1 mean2 -> prints "top1" or "top2"
+  "$PYTHON_BIN" - "$1" "$2" <<'PY'
+import sys
+m1, m2 = map(float, sys.argv[1:])
+print("top2" if m2 > m1 else "top1")
+PY
+}
+
+# --- CNN winner ---
 log "Selecting final CNN winner"
 CNN_TOP1_MEAN="$(mean_of_three "${CNN_TOP1_CFG}_CNN" "C01_CNN_top1_seed23" "C02_CNN_top1_seed47" | tr -d '[:space:]')"
 CNN_TOP2_MEAN="$(mean_of_three "${CNN_TOP2_CFG}_CNN" "C03_CNN_top2_seed23" "C04_CNN_top2_seed47" | tr -d '[:space:]')"
@@ -306,15 +391,12 @@ if [[ -z "$CNN_TOP1_MEAN" || -z "$CNN_TOP2_MEAN" ]]; then
   exit 1
 fi
 CNN_FINAL_CFG="$CNN_TOP1_CFG"
-"$PYTHON_BIN" - "$CNN_TOP1_MEAN" "$CNN_TOP2_MEAN" <<'PY' >/tmp/cnn_pick.txt
-import sys
-m1, m2 = map(float, sys.argv[1:])
-print("top2" if m2 > m1 else "top1")
-PY
-if [[ "$(cat /tmp/cnn_pick.txt)" == "top2" ]]; then
+if [[ "$(pick_better "$CNN_TOP1_MEAN" "$CNN_TOP2_MEAN")" == "top2" ]]; then
   CNN_FINAL_CFG="$CNN_TOP2_CFG"
 fi
+log "CNN winner: $CNN_FINAL_CFG"
 
+# --- CLIP winner ---
 log "Selecting final CLIP winner"
 CLIP_TOP1_MEAN="$(mean_of_three "${CLIP_TOP1_CFG}_CLIP" "E01_CLIP_top1_seed23" "E02_CLIP_top1_seed47" | tr -d '[:space:]')"
 CLIP_TOP2_MEAN="$(mean_of_three "${CLIP_TOP2_CFG}_CLIP" "E03_CLIP_top2_seed23" "E04_CLIP_top2_seed47" | tr -d '[:space:]')"
@@ -323,31 +405,54 @@ if [[ -z "$CLIP_TOP1_MEAN" || -z "$CLIP_TOP2_MEAN" ]]; then
   exit 1
 fi
 CLIP_FINAL_CFG="$CLIP_TOP1_CFG"
-"$PYTHON_BIN" - "$CLIP_TOP1_MEAN" "$CLIP_TOP2_MEAN" <<'PY' >/tmp/clip_pick.txt
-import sys
-m1, m2 = map(float, sys.argv[1:])
-print("top2" if m2 > m1 else "top1")
-PY
-if [[ "$(cat /tmp/clip_pick.txt)" == "top2" ]]; then
+CLIP_BEST_MEAN="$CLIP_TOP1_MEAN"
+if [[ "$(pick_better "$CLIP_TOP1_MEAN" "$CLIP_TOP2_MEAN")" == "top2" ]]; then
   CLIP_FINAL_CFG="$CLIP_TOP2_CFG"
+  CLIP_BEST_MEAN="$CLIP_TOP2_MEAN"
 fi
+log "CLIP winner: $CLIP_FINAL_CFG (mean=$CLIP_BEST_MEAN)"
 
-rm -f /tmp/cnn_pick.txt /tmp/clip_pick.txt
+# --- DINO winner ---
+log "Selecting final DINO winner"
+DINO_TOP1_MEAN="$(mean_of_three "${DINO_TOP1_CFG}_DINO" "H01_DINO_top1_seed23" "H02_DINO_top1_seed47" | tr -d '[:space:]')"
+DINO_TOP2_MEAN="$(mean_of_three "${DINO_TOP2_CFG}_DINO" "H03_DINO_top2_seed23" "H04_DINO_top2_seed47" | tr -d '[:space:]')"
+if [[ -z "$DINO_TOP1_MEAN" || -z "$DINO_TOP2_MEAN" ]]; then
+  echo "ERROR: cannot compute DINO final means" >&2
+  exit 1
+fi
+DINO_FINAL_CFG="$DINO_TOP1_CFG"
+DINO_BEST_MEAN="$DINO_TOP1_MEAN"
+if [[ "$(pick_better "$DINO_TOP1_MEAN" "$DINO_TOP2_MEAN")" == "top2" ]]; then
+  DINO_FINAL_CFG="$DINO_TOP2_CFG"
+  DINO_BEST_MEAN="$DINO_TOP2_MEAN"
+fi
+log "DINO winner: $DINO_FINAL_CFG (mean=$DINO_BEST_MEAN)"
+
+# --- ViT winner: CLIP vs DINO ---
+log "ViT showdown: CLIP ($CLIP_FINAL_CFG, mean=$CLIP_BEST_MEAN) vs DINO ($DINO_FINAL_CFG, mean=$DINO_BEST_MEAN)"
+VIT_WINNER="$(pick_better "$CLIP_BEST_MEAN" "$DINO_BEST_MEAN")"
 
 # ---------------------------
 # Phase F: Final production runs
 # ---------------------------
 log "Phase F: final production runs"
 run_with_args_string "F01_CNN_FINAL_FULLTRAIN" "$(cnn_args_for_config "$CNN_FINAL_CFG" "$SEED_MAIN")"
-run_with_args_string "F02_CLIP_FINAL_FULLTRAIN" "$(clip_args_for_config "$CLIP_FINAL_CFG" "$SEED_MAIN")"
+
+if [[ "$VIT_WINNER" == "top2" ]]; then
+  log "ViT final model: DINOv2 config $DINO_FINAL_CFG"
+  run_with_args_string "F02_VIT_FINAL_FULLTRAIN" "$(dino_args_for_config "$DINO_FINAL_CFG" "$SEED_MAIN")"
+else
+  log "ViT final model: CLIP config $CLIP_FINAL_CFG"
+  run_with_args_string "F02_VIT_FINAL_FULLTRAIN" "$(clip_args_for_config "$CLIP_FINAL_CFG" "$SEED_MAIN")"
+fi
 
 # Export expected names
 if [[ -f runs/F01_CNN_FINAL_FULLTRAIN/best.pth ]]; then
   cp runs/F01_CNN_FINAL_FULLTRAIN/best.pth cnn_flowers.pth
   log "Exported cnn_flowers.pth"
 fi
-if [[ -f runs/F02_CLIP_FINAL_FULLTRAIN/best.pth ]]; then
-  cp runs/F02_CLIP_FINAL_FULLTRAIN/best.pth vit_flowers.pth
+if [[ -f runs/F02_VIT_FINAL_FULLTRAIN/best.pth ]]; then
+  cp runs/F02_VIT_FINAL_FULLTRAIN/best.pth vit_flowers.pth
   log "Exported vit_flowers.pth"
 fi
 

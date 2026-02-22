@@ -1,0 +1,10 @@
+.cache/
+.git/
+__pycache__/
+runs/
+runs copy/
+data/
+*.pth
+docs/
+scripts/
+.dockerignore
